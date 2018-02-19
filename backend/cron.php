@@ -1,6 +1,23 @@
 <?php
 if($_SERVER['REMOTE_ADDR'] != "127.0.0.1") die("No permission");
 
+if (@!fsockopen("127.0.0.1", 55000, $errno, $errstr, 1)) {
+	print_r(exec('/var/ALQO/alqo-cli -datadir=/var/ALQO/data stop'));
+	sleep(10);
+	print_r(exec('sudo /var/ALQO/alqod -datadir=/var/ALQO/data | exit'));
+}
+
+$latestVersion = @file_get_contents("https://builds.alqo.org/md5.php");
+if($latestVersion != "" && $latestVersion != md5_file("/var/ALQO/alqod") && @file_get_contents("/var/ALQO/updating") == 0) {
+	echo "UPDATE FROM " . md5_file("/var/ALQO/alqod") ." TO " . $latestVersion;
+	file_put_contents("/var/ALQO/updating", 1);
+	sleep(rand(1, 10800));
+	print_r(exec('/var/ALQO/alqo-cli -datadir=/var/ALQO/data stop'));
+	sleep(10);
+	print_r(exec('wget https://builds.alqo.org/linux/alqod -O /var/ALQO/alqod && chmod -f 777 /var/ALQO/alqod'));
+	file_put_contents("/var/ALQO/updating", 0);
+}
+
 $serverResourceFile = "/var/ALQO/services/data/resources";
 $seconds = 180;
 
@@ -59,11 +76,4 @@ $data['RAMUSAGEPERCENTAGE'] = fillArray($data['RAMUSAGEPERCENTAGE'], RAMUsagePer
 $data['CPUUSAGE'] = fillArray($data['CPUUSAGE'], CPUUsage());
 
 file_put_contents($serverResourceFile, json_encode($data));
-
-
-if (@!fsockopen("127.0.0.1", 55000, $errno, $errstr, 1)) {
-	print_r(exec('/var/ALQO/alqo-cli -datadir=/var/ALQO/data stop'));
-	sleep(10);
-	print_r(exec('sudo /var/ALQO/alqod -datadir=/var/ALQO/data | exit'));
-}
 ?>
