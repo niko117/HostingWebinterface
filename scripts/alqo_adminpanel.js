@@ -267,6 +267,52 @@ $(document).ready(function () {
             }, 2000);
         });
     }
+    function reindexDaemon() {
+        toastr.options = {
+            "positionClass": "toast-top-right",
+            "closeButton": false,
+            "progressBar": true,
+            "showEasing": "swing",
+            "timeOut": "20000"
+        };
+        toastr.warning("Daemon reindex intiated. Please wait.");
+        $.get("ajax.php", {reindexDaemon: ""}, function (data) {
+            toastr.options = {
+                "positionClass": "toast-top-right",
+                "closeButton": false,
+                "progressBar": true,
+                "showEasing": "swing",
+                "timeOut": "2000"
+            };
+            toastr.info("Success.");
+            setTimeout(function () {
+                location.reload();
+            }, 2000);
+        });
+    }
+    function resetServer() {
+        toastr.options = {
+            "positionClass": "toast-top-right",
+            "closeButton": false,
+            "progressBar": true,
+            "showEasing": "swing",
+            "timeOut": "20000"
+        };
+        toastr.warning("Server reset initiated. Please wait.");
+        $.get("ajax.php", {resetServer: ""}, function (data) {
+            toastr.options = {
+                "positionClass": "toast-top-right",
+                "closeButton": false,
+                "progressBar": true,
+                "showEasing": "swing",
+                "timeOut": "2000"
+            };
+            toastr.info("Success." + data);
+            setTimeout(function () {
+                location.reload();
+            }, 2000);
+        });
+    }
     function setPrivKey(key) {
         $.get("ajax.php", {setPrivKey: key}, function (data) {
             $.get("ajax.php", {getPrivKey: ""}, function (data) {
@@ -285,7 +331,7 @@ $(document).ready(function () {
             cpuUsagePercentageArr = tmpJSON.CPUUSAGE;
 
             $("#actRamUsage").html(strRamUsageMB + " MB (" + ramUsagePercentageArr[ramUsagePercentageArr.length - 1] + "%)");
-            $("#actCpuUsage").html("(" + cpuUsagePercentageArr[cpuUsagePercentageArr.length - 1] + "%)");
+            $("#actCpuUsage").html("(" + Math.min(Math.max(cpuUsagePercentageArr[cpuUsagePercentageArr.length - 1], 1), 100) + "%)");
 
             updateRamGraph(ramUsagePercentageArr);
             updateCpuGraph(cpuUsagePercentageArr);
@@ -449,7 +495,11 @@ $(document).ready(function () {
     $("#btnLogout").click(function (event) {
         logoutattempt(event);
     });
-
+    $("#btnReset").click(function (event) {
+        event.preventDefault();
+        resetServer();
+    });
+	
     $("#submit_masternodekey").click(function (event) {
         event.preventDefault();
         setPrivKey($("#mnKeyInput").val());
@@ -457,6 +507,10 @@ $(document).ready(function () {
     $("#restart_daemon_btn").click(function (event) {
         event.preventDefault();
         restartDaemon();
+    });
+    $("#reindex_daemon_btn").click(function (event) {
+        event.preventDefault();
+        reindexDaemon();
     });
 
 
