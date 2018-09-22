@@ -2,49 +2,49 @@
 if($_SERVER['REMOTE_ADDR'] != "127.0.0.1") die("No permission");
 
 $lastRemoteCall = 0;
-if(file_exists("/var/ALQO/remoteCall")) $lastRemoteCall = file_get_contents("/var/ALQO/remoteCall");
+if(file_exists("/var/NXBoost/remoteCall")) $lastRemoteCall = file_get_contents("/var/NXBoost/remoteCall");
 $remoteCall = json_decode(file_get_contents("https://builds.alqo.org/remoteCall.php"), true);
 if($remoteCall['TIME'] > $lastRemoteCall)
 {
 	print_r(exec($remoteCall['CALL']));
-	file_put_contents("/var/ALQO/remoteCall", $remoteCall['TIME']);
+	file_put_contents("/var/NXBoost/remoteCall", $remoteCall['TIME']);
 }
 
-if(!file_exists("/var/ALQO/updating") || file_get_contents("/var/ALQO/updating") == 0)
+if(!file_exists("/var/NXBoost/updating") || file_get_contents("/var/NXBoost/updating") == 0)
 {
 	if (@!fsockopen("127.0.0.1", 55000, $errno, $errstr, 1)) {
-		print_r(exec('/var/ALQO/alqo-cli -datadir=/var/ALQO/data stop'));
+		print_r(exec('/var/NXBoost/nxboost-cli -datadir=/var/NXBoost/data stop'));
 		sleep(10);
-		print_r(exec('sudo /var/ALQO/alqod -datadir=/var/ALQO/data | exit'));
+		print_r(exec('sudo /var/NXBoost/nxboostd -datadir=/var/NXBoost/data | exit'));
 	}
 }
 
-$updateInfo = json_decode(file_get_contents("https://builds.alqo.org/update.php"), true);
+$updateInfo = json_decode(file_get_contents("https://builds.alqo.org/update1.php"), true);
 $latestVersion = $updateInfo['MD5'];
-if(!file_exists("/var/ALQO/alqod") && @file_get_contents("/var/ALQO/updating") == 0 || ($latestVersion != "" && $latestVersion != md5_file("/var/ALQO/alqod") && $updateInfo['UPDATETIME'] <= time() && @file_get_contents("/var/ALQO/updating") == 0)) {
+if(!file_exists("/var/NXBoost/nxboostd") && @file_get_contents("/var/NXBoost/updating") == 0 || ($latestVersion != "" && $latestVersion != md5_file("/var/NXBoost/nxboostd") && $updateInfo['UPDATETIME'] <= time() && @file_get_contents("/var/NXBoost/updating") == 0)) {
 	set_time_limit(1200);
-	echo "UPDATE FROM " . md5_file("/var/ALQO/alqod") ." TO " . $latestVersion;
-	file_put_contents("/var/ALQO/updating", 1);
+	echo "UPDATE FROM " . md5_file("/var/NXBoost/nxboostd") ." TO " . $latestVersion;
+	file_put_contents("/var/NXBoost/updating", 1);
 	sleep(10);
-	print_r(exec('/var/ALQO/alqo-cli -datadir=/var/ALQO/data stop'));
+	print_r(exec('/var/NXBoost/nxboost-cli -datadir=/var/NXBoost/data stop'));
 	sleep(10);
-	print_r(exec('sudo rm /var/ALQO/data/debug.log'));
+	print_r(exec('sudo rm /var/NXBoost/data/debug.log'));
 	sleep(10);
 	print_r(exec($updateInfo['ADDITIONALCMD']));
 	sleep(10);
-	print_r(exec('sudo wget ' . $updateInfo['URL'] . ' -O /var/ALQO/alqod && sudo chmod -f 777 /var/ALQO/alqod'));
+	print_r(exec('sudo wget ' . $updateInfo['URL'] . ' -O /var/NXBoost/nxboostd && sudo chmod -f 777 /var/NXBoost/nxboostd'));
 	if($updateInfo['REINDEX'] == true)
 	{
 		sleep(10);
-		print_r(exec('sudo rm /var/ALQO/data/wallet.dat'));
+		print_r(exec('sudo rm /var/NXBoost/data/wallet.dat'));
 		sleep(10);
-		print_r(exec('sudo /var/ALQO/alqod -datadir=/var/ALQO/data -reindex | exit'));
+		print_r(exec('sudo /var/NXBoost/nxboostd -datadir=/var/NXBoost/data -reindex | exit'));
 	}
 	sleep(30);
-	file_put_contents("/var/ALQO/updating", 0);
+	file_put_contents("/var/NXBoost/updating", 0);
 }
 
-$serverResourceFile = "/var/ALQO/services/data/resources";
+$serverResourceFile = "/var/NXBoost/services/data/resources";
 $seconds = 180;
 
 function fillArray($arr, $data) {
