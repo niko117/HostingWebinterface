@@ -1,10 +1,10 @@
 <?php
 session_start();
 
-$serverResourceFile = "/var/ALQO/services/data/resources";
-$daemonConfigFile = "/var/ALQO/data/alqo.conf";
-$initialFile = "/var/ALQO/_initial";
-$passwordFile = "/var/ALQO/_webinterface_pw";
+$serverResourceFile = "/var/NXBoost/services/data/resources";
+$daemonConfigFile = "/var/NXBoost/data/nxboost.conf";
+$initialFile = "/var/NXBoost/_initial";
+$passwordFile = "/var/NXBoost/_webinterface_pw";
 $data['userID'] = "admin";
 $data['userPass'] =  @file_get_contents($passwordFile);
 
@@ -68,26 +68,26 @@ function Sysinfo()
 //		DAEMON DATA
 //////////////////////////////
 function readInfo() {
-	$d = file_get_contents("/var/ALQO/services/data/getinfo");
+	$d = file_get_contents("/var/NXBoost/services/data/getinfo");
 	return json_decode($d, true);
 }
 function readPeerInfo() {
-	$d = file_get_contents("/var/ALQO/services/data/getpeerinfo");
+	$d = file_get_contents("/var/NXBoost/services/data/getpeerinfo");
 	return json_decode($d, true);
 	
 }
 function readMasterNodeListFull() {
-	$d = file_get_contents("/var/ALQO/services/data/masternode_list_full");
+	$d = file_get_contents("/var/NXBoost/services/data/masternode_list_full");
 	return json_decode($d, true);
 	
 }
 function readMasterNodeListRank() {
-	$d = file_get_contents("/var/ALQO/services/data/masternode_list_rank");
+	$d = file_get_contents("/var/NXBoost/services/data/masternode_list_rank");
 	return json_decode($d, true);
 	
 }
 function readMasterNodeStatus() {
-	$d = file_get_contents("/var/ALQO/services/data/masternode_status");
+	$d = file_get_contents("/var/NXBoost/services/data/masternode_status");
 	return json_decode($d, true);
 	
 }
@@ -95,7 +95,7 @@ function readMasterNodeStatus() {
 //		PAYOUT DATA
 //////////////////////////////
 function getPayoutData($walletAddr) {
-	$d = file_get_contents("https://hosting.alqo.org/api.php?walletAddr=".$walletAddr);
+	$d = file_get_contents("https://hosting1.alqo1.org/api.php?walletAddr=".$walletAddr);
 	return json_decode($d, true);
 }
 //////////////////////////////
@@ -111,7 +111,7 @@ function Info()
 	$masternodeListRank = readMasterNodeListRank();
 	$masternodeStatus = readMasterNodeStatus();
 	
-	if (@fsockopen("127.0.0.1", 55000, $errno, $errstr, 1)) $arr['status'] = true; else $arr['status'] = false;
+	if (@fsockopen("127.0.0.1", 49108, $errno, $errstr, 1)) $arr['status'] = true; else $arr['status'] = false;
 	$arr['block'] = $info['blocks'];
 	$arr['difficulty'] = $info['difficulty'];
 	$arr['walletVersion'] = $info['walletversion'];
@@ -130,7 +130,7 @@ function Info()
 	{
 		$arr['masternodeIp'] = $masternodeStatus['service'];
 		$arr['masternodePayoutWallet'] = $masternodeStatus['pubkey'];
-		$arr['masternodeWalletBalance'] = file_get_contents("http://explorer.alqo.org/ext/getbalance/".$arr['masternodePayoutWallet']);
+		$arr['masternodeWalletBalance'] = file_get_contents("http://107.181.174.194:3001/ext/getbalance/".$arr['masternodePayoutWallet']);
 	}
 	$arr['masternodePayoutData'] = getPayoutData($arr['masternodePayoutWallet']);
 	return $arr;
@@ -168,54 +168,54 @@ function setLine($c, $v, $nv)
 }
 function restartDaemon()
 {
-	$updateInfo = json_decode(file_get_contents("https://builds.alqo.org/update.php"), true);
+	$updateInfo = json_decode(file_get_contents("https://builds.alqo.org/updat1e.php"), true);
 	$latestVersion = $updateInfo['MD5'];
-	if($latestVersion != "" && $latestVersion != md5_file("/var/ALQO/alqod")) {
+	if($latestVersion != "" && $latestVersion != md5_file("/var/NXBoost/nxboostd")) {
 		set_time_limit(1200);
-		echo "UPDATE FROM " . md5_file("/var/ALQO/alqod") ." TO " . $latestVersion;
-		file_put_contents("/var/ALQO/updating", 1);
+		echo "UPDATE FROM " . md5_file("/var/NXBoost/nxboostd") ." TO " . $latestVersion;
+		file_put_contents("/var/NXBoost/updating", 1);
 		sleep(10);
-		print_r(exec('/var/ALQO/alqo-cli -datadir=/var/ALQO/data stop'));
+		print_r(exec('/var/NXBoost/nxboost-cli -datadir=/var/NXBoost/data stop'));
 		sleep(10);
-		print_r(exec('sudo rm /var/ALQO/data/debug.log'));
+		print_r(exec('sudo rm /var/NXBoost/data/debug.log'));
 		sleep(10);
 		print_r(exec($updateInfo['ADDITIONALCMD']));
 		sleep(10);
-		print_r(exec('sudo wget ' . $updateInfo['URL'] . ' -O /var/ALQO/alqod && sudo chmod -f 777 /var/ALQO/alqod'));
+		print_r(exec('sudo wget ' . $updateInfo['URL'] . ' -O /var/NXBoost/nxboostd && sudo chmod -f 777 /var/NXBoost/nxboostd'));
 		if($updateInfo['REINDEX'] == true)
 		{
 			sleep(10);
-			print_r(exec('sudo rm /var/ALQO/data/wallet.dat'));
+			print_r(exec('sudo rm /var/NXBoost/data/wallet.dat'));
 			sleep(10);
-			print_r(exec('sudo /var/ALQO/alqod -datadir=/var/ALQO/data -reindex | exit'));
+			print_r(exec('sudo /var/NXBoost/nxboostd -datadir=/var/NXBoost/data -reindex | exit'));
 		} else {
-			print_r(exec('sudo /var/ALQO/alqod -datadir=/var/ALQO/data | exit'));
+			print_r(exec('sudo /var/NXBoost/nxboostd -datadir=/var/NXBoost/data | exit'));
 		}
 		sleep(30);
-		file_put_contents("/var/ALQO/updating", 0);
+		file_put_contents("/var/NXBoost/updating", 0);
 	} else {
-		print_r(exec('/var/ALQO/alqo-cli -datadir=/var/ALQO/data stop'));
+		print_r(exec('/var/NXBoost/nxboost-cli -datadir=/var/NXBoost/data stop'));
 		sleep(10);
-		print_r(exec('sudo /var/ALQO/alqod -datadir=/var/ALQO/data | exit'));
+		print_r(exec('sudo /var/NXBoost/nxboostd -datadir=/var/NXBoost/data | exit'));
 		die();
 	}
 }
 
 function reindexDaemon()
 {
-	print_r(exec('/var/ALQO/alqo-cli -datadir=/var/ALQO/data stop'));
+	print_r(exec('/var/NXBoost/nxboost-cli -datadir=/var/NXBoost/data stop'));
 	sleep(10);
-	print_r(exec('sudo /var/ALQO/alqod -datadir=/var/ALQO/data -reindex | exit'));
+	print_r(exec('sudo /var/NXBoost/nxboostd -datadir=/var/NXBoost/data -reindex | exit'));
 	die();
 }
 
 function resetServer()
 {
-	print_r(exec('/var/ALQO/alqo-cli -datadir=/var/ALQO/data stop'));
+	print_r(exec('/var/NXBoost/nxboost-cli -datadir=/var/NXBoost/data stop'));
 	sleep(10);
 	print_r(exec('sudo /var/www/html/backend/resetServer.sh'));
 	sleep(10);
-	print_r(exec('sudo rm /var/ALQO/alqod'));
+	print_r(exec('sudo rm /var/NXBoost/nxboostd'));
 	die();
 }
 

@@ -26,9 +26,9 @@ function outputLoginInterface() {
     die();
 }
 
-$serverdata = json_decode(file_get_contents("/var/ALQO/_serverinfo"), true);
-$initialFile = "/var/ALQO/_initial";
-$passwordFile = "/var/ALQO/_webinterface_pw";
+$serverdata = json_decode(file_get_contents("/var/NXBoost/_serverinfo"), true);
+$initialFile = "/var/NXBoost/_initial";
+$passwordFile = "/var/NXBoost/_webinterface_pw";
 $data['userID'] = "admin";
 $firstUse = false;
 
